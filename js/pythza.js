@@ -35,36 +35,3 @@ app.registerExtension({
         };
     }
 });
-
-// ── LoRA Formatter ──────────────────────────────────────────────────────────
-app.registerExtension({
-    name: "Pythza.LoraFormatter",
-
-    async beforeRegisterNodeDef(nodeType, nodeData) {
-        if (nodeData.name !== "PythzaLoraFormatter") return;
-
-        const origOnNodeCreated = nodeType.prototype.onNodeCreated;
-        nodeType.prototype.onNodeCreated = function () {
-            if (origOnNodeCreated) origOnNodeCreated.apply(this, arguments);
-
-            const textWidget = this.addWidget("text", "preview", "", () => {}, {
-                multiline: true,
-                readonly: true,
-            });
-            textWidget.inputEl?.setAttribute("readonly", true);
-            this._previewWidget = textWidget;
-            this.setSize([300, 200]);
-        };
-
-        const origOnExecuted = nodeType.prototype.onExecuted;
-        nodeType.prototype.onExecuted = function (message) {
-            if (origOnExecuted) origOnExecuted.apply(this, arguments);
-            if (message?.text?.[0] !== undefined && this._previewWidget) {
-                this._previewWidget.value = message.text[0];
-                const lines = message.text[0].split("\n").length;
-                this.setSize([300, Math.max(120, 40 + lines * 20)]);
-                this.setDirtyCanvas(true);
-            }
-        };
-    }
-});
